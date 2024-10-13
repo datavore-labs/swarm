@@ -188,10 +188,23 @@ class Swarm:
                 merge_chunk(message, delta)
             yield {"delim": "end"}
 
-            message["tool_calls"] = list(
-                message.get("tool_calls", {}).values())
-            if not message["tool_calls"]:
+            # Patch for ollama streaming and tool call bug
+            try:
+                tool_call = json.loads(message['content'])
+                if tool_call['name'] is not None and tool_call['parameters'] is not None:
+                    message['tool_calls'] = [{
+                        "id": "call_8exiko6y", 
+                        "function": {"arguments": json.dumps(tool_call['parameters'], default='{}'), "name": tool_call['name']},
+                        "type": "function",
+                        "sender": active_agent.name
+                    }]
+            except Exception:
                 message["tool_calls"] = None
+
+            # message["tool_calls"] = list(
+            #     message.get("tool_calls", {}).values())
+            # if not message["tool_calls"]:
+            #     message["tool_calls"] = None
             debug_print(debug, "Received completion:", message)
             history.append(message)
 
