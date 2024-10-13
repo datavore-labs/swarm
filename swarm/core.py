@@ -65,7 +65,8 @@ class Swarm:
 
         if tools:
             create_params["parallel_tool_calls"] = agent.parallel_tool_calls
-
+        debug_print(debug, 'Calling downstream model with...')
+        debug_print(debug, json.dumps(create_params))
         return self.client.chat.completions.create(**create_params)
 
     def handle_function_result(self, result, debug) -> Result:
